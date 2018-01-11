@@ -307,3 +307,257 @@ arr.forEach(function (chr) {
 // b
 // c
 ```
+## 函数
+函数是一段可以反复调用的代码块。
+### 1. 概述
+#### 1.1 函数的声明
+JavaScript有三种声明函数的方法。
+（1）function 命令
+（2）函数表达式（采用变量赋值的写法）
+```
+var print = function(s) {
+  console.log(s);
+};
+//此时匿名函数称为函数表达式
+```
+（3）Function 构造函数
+```
+var add = new Function(
+  'x',
+  'y',
+  'return x + y'
+);
+
+// 等同于
+function add(x, y) {
+  return x + y;
+}
+```
+不推荐此方法，了解即可。
+#### 1.2 函数重复声明
+如果一个函数被多次声明，后面的声明就会覆盖前面的声明。
+#### 1.3 圆括号运算符，return 语句和递归
+调用函数时。要使用圆括号运算符。圆括号中加入函数参数。
+```
+function add(x, y) {
+  return x + y;
+}
+
+add(1, 1) // 2
+```
+上面代码中，函数名后面紧跟一对圆括号，就会调用这个函数。
+
+函数体内部的`return`语句，表示返回。JavaScript 引擎遇到`return`语句，就直接返回`return`后面的那个表达式的值，后面即使还有语句，也不会得到执行。也就是说，`return`语句所带的那个表达式，就是函数的返回值。`return`语句不是必需的，如果没有的话，该函数就不返回任何值，或者说返回`undefined`。
+
+函数调用自身就是递归（recursion）。
+```
+//计算斐波那契数列
+function fib(num) {
+  if (num === 0) return 0;
+  if (num === 1) return 1;
+  return fib(num - 2) + fib(num - 1);
+}
+
+fib(6) // 8
+//fib函数内部又调用了fib，计算得到斐波那契数列的第6个元素是8。
+```
+#### 1.4 函数名的提升
+JavaScrip 引擎将函数名视同变量名，所以采用`function`命令声明函数时，整个函数会像变量声明一样，被提升到代码头部。
+```
+f();
+
+function f() {}
+```
+由于变量提升，函数`f`被提升到代码头部，所以不会报错。
+**如果采用赋值语句定义函数，会报错**
+```
+f();
+var f = function (){};
+// TypeError: undefined is not a function
+```
+等同于
+```
+var f;
+f();
+f = function () {};
+//调用f时，f只是被声明，未赋值，等于undefined
+```
+**所以如果同时采用`function`命令和赋值语句声明同一个函数，最后总是采用赋值语句的定义。**
+#### 1.5 不能在条件语句总声明函数
+### 2. 函数的属性和方法
+#### 2.1 name 属性
+函数的name属性返回紧跟在function关键字之后的那个函数名。
+```
+function f1() {}
+f1.name // 'f1'
+//函数的name属性总是返回紧跟在function关键字之后的那个函数名
+```
+#### 2.2 length 属性
+函数的`length`属性返回函数预期传入的参数个数（定义的参数个数）。
+```
+function f(a, b) {}
+f.length // 2
+```
+#### 2.3 toString()
+函数的`toString()`方法返回一个字符串，内容是函数源码。
+```
+function f() {/*
+  这是一个
+  多行注释
+*/
+  a();
+  b();
+  c();
+}
+
+f.toString()
+// function f() {/*
+//   这是一个
+//   多行注释
+//*/
+//  a();
+//  b();
+//  c();
+// }
+```
+### 3. 函数作用域
+#### 3.1 定义
+作用域指的是变量存在的范围。
+全局作用域：变量在整个程序中一直存在，所有地方都可以读取（在函数外部声明）。
+函数作用域：变量只在函数内部存在（在函数内部定义）。
+块级作用域
+**函数内部定义的变量，会在该作用域内覆盖同名全局变量。**
+```
+var v = 1;
+
+function f(){
+  var v = 2;
+  console.log(v);
+}
+
+f() // 2
+v // 1
+```
+**注意，对于`var`命令来说，局部变量只能在函数内部声明，在其他区块中声明，一律都是全局变量。**
+```
+if (true) {
+  var x = 5;
+}
+console.log(x);  // 5
+```
+上面代码中，变量`x`在条件判断区块之中声明，结果就是一个全局变量，可以在区块之外读取。
+### 3.2 函数内部的变量提升
+与全局作用域一样，函数作用域内部也会产生“变量提升”现象。`var`命令声明的变量，不管在什么位置，变量声明都会被提升到函数体头部。
+```
+function foo(x) {
+  if (x > 100) {
+    var tmp = x - 100;//可以理解为这一区块声明的全局变量
+  }//在这个区块又成为局部变量，因为在函数体中
+}
+
+// 等同于
+function foo(x) {
+  var tmp;
+  if (x > 100) {
+    tmp = x - 100;
+  };
+}
+```
+#### 3.3 函数本身的作用域
+函数本身也是一个值，也有自己的作用域。它的作用域与变量一样，就是其声明时所在的作用域，与其运行时所在作用域无关。
+```
+var a = 1;
+var x = function () {
+  console.log(a);
+};
+
+function f() {
+  var a = 2;
+  x();
+}
+
+f() // 1
+```
+上面代码中，函数`x`是在函数f的外部声明的，所以它的作用域绑定外层，内部变量`a`不会到函数`f`体内取值，所以输出`1`，而不是`2`。
+**函数执行时所在的作用域，是定义时的作用域，而不是调用时所在的作用域。**
+**同样，函数体内声明的函数，作用域绑定函数体内部。**
+### 4. 参数
+#### 4.1 概述
+函数运行时，有时候需要提供外部数据，不同的外部数据会得到不同结果，这种外部数据就叫做参数。
+```
+function square(x) {
+  return x * x;
+}
+
+square(2) // 4
+square(3) // 9
+```
+参数可省略。
+```
+function f(a, b) {
+  return a;
+}
+
+f(1, 2, 3) // 1
+f(1) // 1
+f() // undefined
+
+f.length // 2
+```
+#### 4.2 同名参数
+如果有同名参数，则取最后出现的那个值。
+```
+function f(a, a) {
+  console.log(a);
+}
+
+f(1, 2) // 2
+```
+调用函数`f`时，没有提供第二个参数，`a`的值就变成了`undefined`。
+```
+function f(a, a) {
+  console.log(a);
+}
+
+f(1) // undefined
+```
+#### 4.3 arguments 对象
+由于 JavaScript 允许函数有不定数目的参数。所以需要一种机制，可以在函数体内部读取所有参数，这就是`arguments`对象。
+`arguments`对象包含了函数运行时的所有参数，`arguments[0]`就是第一个参数，`arguments[1]`就是第二个参数，以此类推。
+**这个对象只有在函数体内部才能使用。**
+```
+var f = function (one) {
+  console.log(arguments[0]);
+  console.log(arguments[1]);
+  console.log(arguments[2]);
+}
+
+f(1, 2, 3)
+// 1
+// 2
+// 3
+```
+通过`arguments`对象的`length`属性，可以判断函数调用时到底带几个参数。
+```
+function f() {
+  return arguments.length;
+}
+
+f(1, 2, 3) // 3
+f(1) // 1
+f() // 0
+```
+将`arguments`转为真正的数组
+```
+//slice方法
+var args = Array.prototype.slice.call(arguments);
+
+// 逐一填入数组
+var args = [];
+for (var i = 0; i < arguments.length; i++) {
+  args.push(arguments[i]);
+}
+```
+### 5. eval命令
+eval命令的作用是，将字符串当作语句执行。
+（此处不做过多介绍）
