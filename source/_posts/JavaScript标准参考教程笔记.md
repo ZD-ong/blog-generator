@@ -757,3 +757,244 @@ if ('abc') {
 - [1, 2, 3] // NaN
 ```
 ## 标准库
+## 1. Object对象
+### 1.1 概述
+Object对象的原生方法分成两类：Object本身的方法与Object的实例方法。
+- Object对象本身的方法
+```
+Object.print = function (o) { console.log(o) };
+```
+- Object的实例方法
+```
+//定义在Object原型对象Object.prototype上的方法
+Object.prototype.print = function () {
+  console.log(this);
+};
+
+var obj = new Object();
+obj.print() // Object
+```
+obj直接继承了Object.prototype的属性和方法。也就是说，obj对象的print方法实质上就是调用Object.prototype.print方法。
+
+**凡是定义在Object.prototype对象上面的属性和方法，将被所有实例对象共享**
+### 1.2 Object()
+```
+var obj = Object();
+obj instanceof Object // true
+```
+obj instanceof Object返回true，就表示obj对象是Object的实例。
+### 1.3 Object 构造函数
+```
+var obj = new Object();
+```
+### 1.4 Object 的静态方法
+遍历属性
+- `Object.keys()`
+- `Object.getOwnPropertyNames()`
+
+原型链相关
+- `Object.create()`
+- `Object.getPrototypeOf()`
+其他方法这里不做介绍
+### 1.5 Object 的实例方法
+定义在Object.prototype对象的方法，所有Object的实例对象都继承了这些方法。
+主要有以下六个
+- `Object.prototype.valueOf()`：返回当前对象对应的值。
+- `Object.prototype.toString()`：返回当前对象对应的字符串形式。
+- `Object.prototype.toLocaleString()`：返回当前对象对应的本地字符串形式。
+- `Object.prototype.hasOwnProperty()`：判断某个属性是否为当前对象自身的属性，还是继承自原型对象的属性。
+- `Object.prototype.isPrototypeOf()`：判断当前对象是否为另一个对象的原型。
+- `Object.prototype.propertyIsEnumerable()`：判断某个属性是否可枚举。
+
+**Object.prototype.toString方法返回对象的类型字符串，因此可以用来判断一个值的类型。**
+```
+var obj = {};
+Object.prototype.toString.call(obj) // "[object Object]"
+//第二个Object表示该值的构造函数
+```
+**也就是说，Object.prototype.toString可以看出一个值到底是什么类型。**
+```
+Object.prototype.toString.call(2) // "[object Number]"
+Object.prototype.toString.call('') // "[object String]"
+Object.prototype.toString.call(true) // "[object Boolean]"
+Object.prototype.toString.call(undefined) // "[object Undefined]"
+Object.prototype.toString.call(null) // "[object Null]"
+Object.prototype.toString.call(Math) // "[object Math]"
+Object.prototype.toString.call({}) // "[object Object]"
+Object.prototype.toString.call([]) // "[object Array]"
+```
+**利用这个特性，可以写出一个比`typeof`更准确的类型判断函数。**
+```
+var type = function (o){
+  var s = Object.prototype.toString.call(o);
+  return s.match(/\[object (.*?)\]/)[1].toLowerCase();
+};
+type({}); // "object"
+type([]); // "array"
+type(5); // "number"
+```
+## 2. Array 对象
+### 2.1 构造函数
+生成新数组
+```
+var arr = new Array(2);
+arr.length // 2
+arr // [ undefined x 2 ]
+```
+上面代码中，Array构造函数的参数2，表示生成一个两个成员的数组，每个位置都是空值。
+
+Array构造函数有一个很大的问题，就是不同的参数，会导致它的行为不一致。
+因此，不建议使用它生成新数组，直接使用数组字面量是更好的做法。
+```
+// bad
+var arr = new Array(1, 2);
+
+// good
+var arr = [1, 2];
+```
+### 2.2 Arra.isArray()
+判断一个值是否为数组
+```
+var a = [1, 2, 3];
+Array.isArray(a) // true
+```
+### 2.3 Array实例的方法
+- `valueOf()`：返回数组本身
+```
+var a = [1, 2, 3];
+a.valueOf() // [1, 2, 3]
+```
+- `toString()`：返回数组的字符串形式
+```
+var a = [1, 2, 3];
+a.toString() // "1,2,3"
+
+```
+- `push()`：在数组的末端添加一个或多个元素，并返回添加新元素后的数组长度（该方法会改变原数组）
+- `pop()`：删除数组的最后一个元素（该方法会改变原数组）
+- `join()`：以参数作为分隔符，将所有数组成员组成一个字符串返回（如果不提供参数，默认用逗号分隔）
+```
+var a = [1, 2, 3, 4];
+
+a.join(' ') // '1 2 3 4'
+a.join(' | ') // "1 | 2 | 3 | 4"
+a.join() // "1,2,3,4"
+```
+- `concat()`：多个数组的合并，将新数组的成员，添加到原数组成员的后部，然后返回一个新数组（原数组不变）
+```
+[1, 2, 3].concat(4, 5, 6)
+// [1, 2, 3, 4, 5, 6]
+```
+- `shift()`：删除数组的第一个元素，并返回该元素（该方法会改变原数组）
+- `unshift()`：在数组的第一个位置添加元素，并返回添加新元素后的数组长度（该方法会改变原数组）
+- `reverse()`：颠倒数组中元素的顺序，返回改变后的数组（该方法将改变原数组)
+- `slice()`：提取原数组的一部分，返回一个新数组
+```
+// 格式
+arr.slice(start_index, stop_index);
+
+// 用法
+var a = ['a', 'b', 'c'];
+
+a.slice(0) // ["a", "b", "c"]
+a.slice(1) // ["b", "c"]
+a.slice(1, 2) // ["b"]
+a.slice(2, 6) // ["c"]
+a.slice() // ["a", "b", "c"]
+```
+如果slice方法的参数是负数，则表示倒数计算的位置。
+```
+var a = ['a', 'b', 'c'];
+a.slice(-2) // ["b", "c"]
+a.slice(-2, -1) // ["b"]
+```
+- `splice()`：删除原数组的一部分成员，并可以在被删除的位置添加入新的数组成员，返回值是被删除的元素（该方法会改变原数组）
+
+splice的第一个参数是删除的起始位置，第二个参数是被删除的元素个数。如果后面还有更多的参数，则表示这些就是要被插入数组的新元素。
+```
+// 格式
+arr.splice(index, count_to_remove, addElement1, addElement2, ...);
+
+// 用法
+var a = ['a', 'b', 'c', 'd', 'e', 'f'];
+a.splice(4, 2, 1, 2) // ["e", "f"]
+a // ["a", "b", "c", "d", 1, 2]
+```
+起始位置如果是负数，就表示从倒数位置开始删除。
+```
+var a = ['a', 'b', 'c', 'd', 'e', 'f'];
+a.splice(-4, 2) // ["c", "d"]
+```
+如果只是单纯地插入元素，splice方法的第二个参数可以设为0。
+```
+var a = [1, 1, 1];
+
+a.splice(1, 0, 2) // []
+a // [1, 2, 1, 1]
+```
+如果只提供第一个参数，等同于将原数组在指定位置拆分成两个数组。
+```
+var a = [1, 2, 3, 4];
+a.splice(2) // [3, 4]
+a // [1, 2]
+```
+- `sort()`：对数组成员进行排序，默认是按照字典顺序排序（原数组将被改变）
+```
+['d', 'c', 'b', 'a'].sort()
+// ['a', 'b', 'c', 'd']
+```
+**sort方法不是按照大小排序，而是按照对应字符串的字典顺序排序**
+```
+[10111, 1101, 111].sort()
+// [10111, 1101, 111]
+```
+如果想让sort方法按照自定义方式排序，可以传入一个函数作为参数，表示按照自定义方法进行排序。
+```
+[10111, 1101, 111].sort(function (a, b) {
+  return a - b;
+})
+// [111, 1101, 10111]
+```
+- `map()`：对数组的所有成员依次调用一个函数，根据函数结果返回一个新数组
+```
+var numbers = [1, 2, 3];
+
+numbers.map(function (n) {
+  return n + 1;
+});
+// [2, 3, 4]
+
+numbers
+// [1, 2, 3]
+```
+如果数组有空位，map方法的回调函数在这个位置不会执行，会跳过数组的空位。
+- `forEach()`：遍历数组的所有成员，不返回值，只用来操作数据
+```
+function log(element, index, array) {
+  console.log('[' + index + '] = ' + element);
+}
+
+[2, 5, 9].forEach(log);
+// [0] = 2
+// [1] = 5
+// [2] = 9
+```
+forEach方法不会跳过undefined和null，但会跳过空位。
+- `filter`：filter方法的参数是一个函数，所有数组成员依次执行该函数，返回结果为true的成员组成一个新数组返回。
+```
+[1, 2, 3, 4, 5].filter(function (elem) {
+  return (elem > 3);
+})
+// [4, 5]
+```
+- `some()`，`every()`：判断数组成员是否符合某种条件
+`some`方法是只要有一个数组成员的返回值是`true`，则整个`some`方法的返回值就是`true`，否则`false`。
+`every`方法则是所有数组成员的返回值都是`true`，才返回`true`，否则`false`。
+- `reduce()`，`reduceRight()`
+- `indexOf()`：返回给定元素在数组中第一次出现的位置，如果没有出现则返回-1
+- `lastIndexOf()`：返回给定元素在数组中最后一次出现的位置，如果没有出现则返回-1
+**注意，如果数组中包含NaN，这两个方法不适用，即无法确定数组成员是否包含NaN。**
+```
+[NaN].indexOf(NaN) // -1
+[NaN].lastIndexOf(NaN) // -1
+```
