@@ -757,8 +757,8 @@ if ('abc') {
 - [1, 2, 3] // NaN
 ```
 # 标准库
-### Object对象
-#### 概述
+## Object对象
+### 概述
 Object对象的原生方法分成两类：Object本身的方法与Object的实例方法。
 - Object对象本身的方法
 ```
@@ -777,17 +777,17 @@ obj.print() // Object
 obj直接继承了Object.prototype的属性和方法。也就是说，obj对象的print方法实质上就是调用Object.prototype.print方法。
 
 **凡是定义在Object.prototype对象上面的属性和方法，将被所有实例对象共享**
-#### Object()
+### Object()
 ```
 var obj = Object();
 obj instanceof Object // true
 ```
 obj instanceof Object返回true，就表示obj对象是Object的实例。
-#### Object 构造函数
+### Object 构造函数
 ```
 var obj = new Object();
 ```
-#### Object 的静态方法
+### Object 的静态方法
 遍历属性
 - `Object.keys()`
 - `Object.getOwnPropertyNames()`
@@ -796,7 +796,7 @@ var obj = new Object();
 - `Object.create()`
 - `Object.getPrototypeOf()`
 其他方法这里不做介绍
-#### Object 的实例方法
+### Object 的实例方法
 定义在Object.prototype对象的方法，所有Object的实例对象都继承了这些方法。
 主要有以下六个
 - `Object.prototype.valueOf()`：返回当前对象对应的值。
@@ -833,8 +833,8 @@ type({}); // "object"
 type([]); // "array"
 type(5); // "number"
 ```
-### Array 对象
-#### 构造函数
+## Array 对象
+### 构造函数
 生成新数组
 ```
 var arr = new Array(2);
@@ -852,13 +852,13 @@ var arr = new Array(1, 2);
 // good
 var arr = [1, 2];
 ```
-#### Arra.isArray()
+### Arra.isArray()
 判断一个值是否为数组
 ```
 var a = [1, 2, 3];
 Array.isArray(a) // true
 ```
-#### Array实例的方法
+### Array实例的方法
 - `valueOf()`：返回数组本身
 ```
 var a = [1, 2, 3];
