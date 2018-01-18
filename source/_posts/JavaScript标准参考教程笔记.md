@@ -756,7 +756,7 @@ if ('abc') {
 + {foo: 'bar'} // NaN
 - [1, 2, 3] // NaN
 ```
-## 标准库
+# 标准库
 ### Object对象
 #### 概述
 Object对象的原生方法分成两类：Object本身的方法与Object的实例方法。
