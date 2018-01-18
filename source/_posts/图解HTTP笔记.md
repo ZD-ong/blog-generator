@@ -254,5 +254,163 @@ HTTP 通信时，不光是客户端和服务器之间的协作，还有一些配
 浏览器缓存（临时网络文件）如果有效，就不必再向服务器请求相同的资源了，可以直接从本地磁盘内读取。
 同样的，当判断缓存失效会重新请求新资源。
 ![浏览器向源服务器确认缓存有效性](https://i.loli.net/2018/01/18/5a5f76ff31809.png)
+# 第六章 HTTP 首部
+## HTTP 报文首部
+![HTTP 报文的结构](https://i.loli.net/2018/01/18/5a60ada5c11cb.png)
+HTTP 协议的请求和响应报文中都会包含 HTTP 首部，首部内容分别为客户端处理响应和服务器处理请求提供所需信息。
+- HTTP 请求报文
+在请求中，HTTP 报文由方法、URI、HTTP 版本、HTTP首部字段等部分构成。
+- HTTP 响应报文
+在响应中，HTTP 报文由 HTTP 版本、状态码、HTTP 首部三部分构成。
+## HTTP 首部字段
+使用首部字段是为了给浏览器和服务器提供报文主体大小、所使用语言、认证信息等内容。
 
+HTTP 首部字段是由首部字段名和字段值构成的。
+```
+首部字段名: 字段值
+Content-Type: text/html
+Keep-Alive: timeout=15, max=100
+```
+HTTP 首部字段根据实际用途分为以下四种类型。
+- 通用首部字段
+- 请求首部字段
+- 响应首部字段
+- 实体首部字段
+
+[HTTP/1.1 规范定义了 47 种首部字段。](http://www.ituring.com.cn/book/miniarticle/74654)
+另，还有 Cookie、Set-Cookie 和 Content-Disposition 等在其他 RFC 中定义的首部字段。
+## HTTP/1.1 通用首部字段
+通用首部字段指的是请求报文和响应报文双方都会使用的首部。
+### Cache-Control
+此字段能够控制缓存行为。
+```
+Cache-Control: private, max-age=0, no-cache
+```
+- privarte, public 指令
+```
+Cache-Control: private
+Cache-Control: public
+```
+当指定 private 指令后，缓存只提供给特定用户，这与 public 指令（向所有用户返回缓存）的行为相反。
+- no-chche 指令
+```
+Cache-Control: no-cache
+```
+使用 no-cache 指令是为了防止从缓存中返回过期的资源。
+- no-store 指令
+```
+Cache-Control: no-store
+```
+使用 no-store 指令，暗示请求或响应中包含机密信息（禁用缓存）。
+- max-age 指令
+```
+Cache-Control: max-age=604800（单位：秒）
+```
+当资源的缓存时间比指定值小则客户端接收缓存资源（max-age 数值代表资源保存为缓存的最长时间）。
+- min-fresh 指令
+```
+Cache-Control: min-fresh=60（单位：秒）
+```
+该指令要求缓存服务器返回至少还未过指定时间的缓存资源。
+[更多指令参考](http://www.ituring.com.cn/book/miniarticle/74655)
+### Connection
+该字段有以下两个作用：
+- 控制代理不再转发的首部字段
+![控制代理不再转发的首部字段](https://i.loli.net/2018/01/18/5a60bb61e545a.png)
+- 管理持久连接
+![管理持久连接](https://i.loli.net/2018/01/18/5a60bb8a3d737.png)
+### Date
+首部字段 Date 表明创建 HTTP 报文的日期和时间。
+```
+Date: Tue, 03 Jul 2012 04:40:59 GMT
+```
+### Pragma
+```
+Pragma: no-cache
+```
+该字段只用在客户端发送的请求中，客户端会要求所有中间服务器不返回缓存的资源。
+### Trailer
+该字段会事先说明在报文主体后记录了哪些首部字段（可应用在 HTTP/1.1 版本分块传输编码时）。
+### Transfer-Encoding
+该字段规定了传输报文主体时采用的编码方式。
+HTTP/1.1 的传输编码方式仅对分块传输编码有效。
+### Upgrade
+该字段用于检测 HTTP 协议及其他协议是否可使用更高版本进行通信。
+### Via
+该字段能够追踪客户端与服务器之间请求和响应报文的传输路径（代理服务器在 Via 首部附加服务器信息，避免请求回环的发生）。
+### Warning
+该字段通常会告知用户一些与缓存相关的问题的警告。
+```
+Warning: [警告码][警告的主机:端口号]“[警告内容]”([日期时间])
+Warning: 113 gw.hackr.jp:8080 "Heuristic expiration" Tue, 03 Jul 2012 05:09:44 GMT
+```
+HTTP/1.1 中定义了 7 种警告。
+## 请求首部字段
+请求首部字段是从客户端往服务器发送请求报文中所使用的字段。
+### Accept
+```
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+```
+该指令可通知服务器，用户代理能够处理的媒体类型（type/subtype ）及其相对优先级。
+- 文本文件
+```
+text/html, text/plain, text/css ...
+```
+- 图片文件
+```
+image/jpeg, image/gif, image/png ...
+```
+- 视频文件
+```
+video/mpeg, video/quicktime ...
+```
+- 应用程序使用的二进制文件
+```
+application/octet-stream, application/zip ...
+```
+当服务器提供多种内容时，将会首先返回权重值最高的媒体类型。
+### Accept-Charset
+```
+Accept-Charset: iso-8859-5, unicode-1-1;q=0.8
+```
+通知服务器用户代理支持的字符集及其相对优先级（可用权重 q 值来表示相对优先级）。
+### Accept-Encoding
+```
+Accept-Encoding: gzip, deflate
+```
+该字段用于告知服务器用户代理支持的内容编码及其优先级(采用权重 q 值来表示相对优先级)。
+- gzip
+- compress
+- deflate
+- identity
+### Accept-Language
+```
+Accept-Language: zh-cn,zh;q=0.7,en-us,en;q=0.3
+```
+该字段用来告知服务器用户代理能够处理的自然语言集及其优先级（按权重值 q 来表示相对优先级）。
+### Host
+```
+Host: www.hackr.jp
+```
+![虚拟主机运行在同一个 IP 上，因此使用首部字段 Host 加以区分](https://i.loli.net/2018/01/18/5a60c3b98ca17.png)
+该字段告知服务器，请求的资源所处的互联网主机名和端口号。
+### Range
+```
+Range: bytes=5001-10000
+```
+对于只需获取部分资源的范围请求，该字段告知服务器资源的指定范围。
+
+接收到附带 Range 首部字段请求的服务器，会返回206 Partial Content 的响应。或在无法处理该请求时返回状态码 200 OK 的响应及全部资源。
+### Referer
+```
+Referer: http://www.hackr.jp/index.htm
+```
+该字段会告知服务器请求的 URI 是从哪个 Web 页面发起的
+
+因为原始资源的 URI 中的查询字符串可能含有 ID 和密码等保密信息，要是写进 Referer 转发给其他服务器，则有可能导致保密信息的泄露。
+###  User-Agent
+![User-Agent 用于传达浏览器的种类](https://i.loli.net/2018/01/19/5a60c69f33635.png)
+首部字段 User-Agent 会将创建请求的浏览器和用户代理名称等信息传达给服务器。
+[更多字段参考](http://www.ituring.com.cn/book/miniarticle/74656)
+## [响应首部字段](http://www.ituring.com.cn/book/miniarticle/74657)
 
