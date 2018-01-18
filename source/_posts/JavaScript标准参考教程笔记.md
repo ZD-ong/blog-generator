@@ -796,6 +796,7 @@ var obj = new Object();
 - `Object.create()`
 - `Object.getPrototypeOf()`
 其他方法这里不做介绍
+
 ### Object 的实例方法
 定义在Object.prototype对象的方法，所有Object的实例对象都继承了这些方法。
 主要有以下六个
@@ -1123,6 +1124,7 @@ Number(true) // 1
 **参数为指定的小数位数，有效范围为0到20，超出这个范围将抛出RangeError错误。**
 - `Number.prototype.toExponential()`：将一个数转为科学计数法形式
 - `Number.prototype.toPrecision()`：将一个数转为指定位数的有效数字
+
 ### 自定义方法
 与其他对象一样，Number.prototype对象上面可以自定义方法，被Number的实例继承。
 ```
