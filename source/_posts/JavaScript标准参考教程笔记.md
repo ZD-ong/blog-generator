@@ -998,3 +998,347 @@ forEach方法不会跳过undefined和null，但会跳过空位。
 [NaN].indexOf(NaN) // -1
 [NaN].lastIndexOf(NaN) // -1
 ```
+## 3. 包装对象
+### 3.1 包装对象的定义
+所谓“包装对象”，就是使用构造函数（new）将以下三个原始类型的值转为对象。
+```
+var v1 = new Number(123);
+var v2 = new String('abc');
+var v3 = new Boolean(true);
+```
+生成的对象与原始值的类型不同。这用typeof运算符就可以看出来。
+```
+typeof v1 // "object"
+typeof v2 // "object"
+typeof v3 // "object"
+
+v1 === 123 // false
+v2 === 'abc' // false
+v3 === true // false
+```
+通过设计包装对象，可以方便原始类型的值调用特定的方法。
+
+Number、String和Boolean如果不作为构造函数调用（即调用时不加new），常常用于将任意类型的值转为数值、字符串和布尔值。
+```
+Number(123) // 123
+String('abc') // "abc"
+Boolean(true) // true
+```
+### 3.2 包装对象实例的方法
+包装对象实例可以使用Object对象提供的原生方法，主要是`valueOf`和`toString`方法。
+- `valueOf`：返回包装对象实例对应的原始类型的值。
+```
+new Number(123).valueOf()  // 123
+new String("abc").valueOf() // "abc"
+new Boolean("true").valueOf() // true
+```
+- `toString()`：返回实例对应的字符串形式
+```
+new Number(123).toString() // "123"
+new String("abc").toString() // "abc"
+new Boolean("true").toString() // "true"
+```
+### 3.3 原始类型的自动转换
+比如，字符串调用`length`属性
+```
+'abc'.length // 3
+```
+JavaScript引擎自动将其转为包装对象，在这个对象上调用length属性。
+
+除了`valueOf`和`toString`方法，还包括包装对象各自定义在原型上的方法。
+```
+'abc'.charAt === String.prototype.charAt
+// true
+//定义在String对象原型上的方法
+```
+### 3.4 自定义方法
+包装对象还可以在原型上添加自定义方法和属性，供原始类型的值直接调用。
+```
+String.prototype.double = function () {
+  return this.valueOf() + this.valueOf();
+};
+
+'abc'.double()
+// abcabc
+
+Number.prototype.double = function () {
+  return this.valueOf() + this.valueOf();
+};
+
+(123).double()
+// 246
+```
+**这种自定义方法和属性的机制，只能定义在包装对象的原型上，如果直接对原始类型的变量添加属性，则无效。**
+```
+var s = 'abc';
+
+s.p = 123;
+s.p // undefined
+//包装对象是自动生成的，赋值后自动销毁
+```
+### 3.5 Boolean 对象
+主要用于生成布尔值的包装对象的实例。
+```
+var b = new Boolean(true);
+
+typeof b // "object"
+b.valueOf() // true
+```
+上面代码的变量b是一个Boolean对象的实例，它的类型是对象，值为布尔值true。（此方法几乎无人使用，了解原理即可）
+```
+//此方法更加直观清晰
+var b = true;
+```
+## 4. Number 对象
+Number对象是数值对应的包装对象，可以作为构造函数使用，也可以作为工具函数使用。
+- 构造函数的使用，生成值为数值的对象
+```
+var n = new Number(1);
+typeof n // "object"
+//返回一个值为1的对象
+```
+- 工具函数的使用，将任何类型的值转为数值
+```
+Number(true) // 1
+```
+### 4.1 Number 对象实例的方法
+- `Number.prototype.toString()`：将数值转为字符串
+```
+(10).toString() // "10"
+等同于
+10['toString'](2) // "1010"
+```
+`toString`接受一个参数，表示输出的进制（默认十进制）。
+```
+(10).toString(2) // "1010"
+(10).toString(8) // "12"
+(10).toString(16) // "a"
+```
+- `Number.prototype.toFixed()`：将一个数转为指定位数的小数，返回这个小数对应的字符串
+```
+(10).toFixed(2) // "10.00"
+10.005.toFixed(2) // "10.01" 
+```
+10.005就不用放在括号里，第一个点被解释为小数点，第二个点就只能解释为点运算符。
+**参数为指定的小数位数，有效范围为0到20，超出这个范围将抛出RangeError错误。**
+- `Number.prototype.toExponential()`：将一个数转为科学计数法形式
+- `Number.prototype.toPrecision()`：将一个数转为指定位数的有效数字
+### 4.2 自定义方法
+与其他对象一样，Number.prototype对象上面可以自定义方法，被Number的实例继承。
+```
+Number.prototype.add = function (x) {
+  return this + x;
+};
+8['add'](2) // 10
+等同于
+(8).add(2) // 10
+```
+上面代码为Number对象实例定义了一个add方法。
+
+由于add方法返回的还是数值，所以可以链式运算。
+```
+Number.prototype.subtract = function (x) {
+  return this - x;
+};
+
+(8).add(2).subtract(4)
+// 6
+```
+在Number对象的原型上部署了iterate方法，将一个数值自动遍历为一个数组。
+```
+Number.prototype.iterate = function () {
+  var result = [];
+  for (var i = 0; i <= this; i++) {
+    result.push(i);
+  }
+  return result;
+};
+
+(8).iterate()
+// [0, 1, 2, 3, 4, 5, 6, 7, 8]
+```
+**数值的自定义方法，只能定义在它的原型对象Number.prototype上面，数值本身是无法自定义属性的。**
+```
+var n = 1;
+n.x = 1;
+n.x // undefined
+```
+## 5. String 对象
+String对象是JavaScript原生提供的三个包装对象之一，用来生成字符串的包装对象。
+```
+var s1 = 'abc';
+var s2 = new String('abc');
+
+typeof s1 // "string"
+typeof s2 // "object"
+
+s2.valueOf() // "abc"
+```
+实际上，字符串的包装对象是一个类似数组的对象（即很像数组，但是实质上不是数组）。
+```
+new String("abc")
+// String {0: "a", 1: "b", 2: "c", length: 3}
+```
+String对象的工具方法：
+```
+String(true) // "true"
+String(5) // "5"
+```
+### 5.1 Strng.fromCharCode()
+该方法的参数是一系列Unicode码点，返回对应的字符串。
+```
+String.fromCharCode(104, 101, 108, 108, 111)
+// "hello"
+```
+### 5.2 实例对象的属性和方法
+- `length`属性：length属性返回字符串的长度
+- `charAt()`：charAt方法返回指定位置的字符，参数是从0开始编号的位置
+```
+var s = new String('abc');
+
+s.charAt(1) // "b"
+s.charAt(s.length - 1) // "c"
+```
+这个方法完全可以用数组下标代替
+```
+'abc'.charAt(1) // "b"
+'abc'[1] // "b"
+```
+如果参数为负数，或大于等于字符串的长度，charAt返回空字符串。
+- `charCodeAt()`：返回给定位置字符的Unicode码点（十进制表示），相当于String.fromCharCode()的逆操作
+```
+'abc'.charCodeAt(1) // 98
+```
+- `concat()`：连接两个字符串，返回一个新字符串，不改变原字符串
+- `slice()`：用于从原字符串取出子字符串并返回，不改变原字符串
+- `substring()`：用于从原字符串取出子字符串并返回，不改变原字符串（不建议使用，建议使用`slice()`）
+- `substr()`：用于从原字符串取出子字符串并返回，不改变原字符串
+- `indexOf()，lastIndexOf()`：用于确定一个字符串在另一个字符串中的位置，都返回一个整数，表示匹配开始的位置
+- `trim()`：用于去除字符串两端的空格，返回一个新字符串，不改变原字符串
+- `toLowerCase()，toUpperCase()`：用于将一个字符串全部转为小写，大写，返回一个新字符串，不改变原字符串
+```
+'Hello World'.toLowerCase()
+// "hello world"
+
+'Hello World'.toUpperCase()
+// "HELLO WORLD"
+
+String.prototype.toUpperCase.call(['a', 'b', 'c'])
+// 'A,B,C'
+```
+- `localeCompare()`：用于比较两个字符串
+```
+'apple'.localeCompare('banana')
+// -1
+
+'apple'.localeCompare('apple')
+// 0
+```
+上面方法返回一个整数，如果小于0，表示第一个字符串小于第二个字符串；如果等于0，表示两者相等；如果大于0，表示第一个字符串大于第二个字符串。
+- `match()`：用于确定原字符串是否匹配某个子字符串，返回一个数组，成员为匹配的第一个字符串
+```
+'cat, bat, sat, fat'.match('at') // ["at"]
+'cat, bat, sat, fat'.match('xt') // null
+```
+- `search()`：用法等同于match，但是返回值为匹配的第一个位置。如果没有找到匹配，则返回-1
+```
+'cat, bat, sat, fat'.search('at') // 1
+```
+- `replace()`：用于替换匹配的子字符串，一般情况下只替换第一个匹配（除非使用带有g修饰符的正则表达式）
+```
+'aaa'.replace('a', 'b') // "baa"
+```
+- `split()`：按照给定规则分割字符串，返回一个由分割出来的子字符串组成的数组
+```
+'a|b|c'.split('|') // ["a", "b", "c"]
+'a|b|c'.split('') // ["a", "|", "b", "|", "c"]
+```
+split方法还可以接受第二个参数，限定返回数组的最大成员数。
+```
+'a|b|c'.split('|', 1) // ["a"]
+```
+## 6. Math 对象
+`Math`是JavaScript的内置对象，提供一系列数学方法。
+```
+new Math()
+// TypeError: object is not a function
+```
+**`Math` 不能当作构造函数使用**
+`Math` 对象提供一些只读数字常数
+```
+<!--
+Math.E：常数e
+Math.LN2：2的自然对数
+Math.LN10：10的自然对数
+Math.LOG2E：以2为底的e的对数
+Math.LOG10E：以10为底的e的对数
+Math.PI：常数Pi
+Math.SQRT1_2：0.5的平方根
+Math.SQRT2：2的平方根
+-->
+```
+### 6.1 方法
+`Math` 对象提供一些数学方法
+```
+<!--
+Math.abs()：绝对值
+Math.ceil()：向上取整
+Math.floor()：向下取整
+Math.max()：最大值
+Math.min()：最小值
+Math.pow()：指数运算
+Math.sqrt()：平方根
+Math.log()：自然对数
+Math.exp()：e的指数
+Math.round()：四舍五入
+Math.random()：随机数
+-->
+```
+- `Math.random()`：返回0到1之间的一个伪随机数，可能等于0，但是一定小于1
+```
+Math.random() // 0.7151307314634323
+```
+可以写一个任意范围的随机数生成函数
+```
+function getRandom(min, max){
+    return Math.random() * (max - min) + min
+}
+getRandom(1.5, 6.5)
+// 2.4942810038223864
+```
+还可以写成
+```
+function getRandom(min, max){
+    return Math.floor(Math.radom() * (max -min + 1)) + min
+}
+getRandom(1, 6)
+//5
+```
+返回一个随机字符的函数
+```
+function random_str(length) {
+  var ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  ALPHABET += 'abcdefghijklmnopqrstuvwxyz';
+  ALPHABET += '0123456789-_';
+  var str = '';
+  for (var i=0; i < length; ++i) {
+    var rand = Math.floor(Math.random() * ALPHABET.length);
+    str += ALPHABET.substring(rand, rand + 1);
+  }
+  return str;
+}
+
+random_str(6) // "NdQKOr"
+```
+### 6.2 三角函数方法
+`Math` 对象还提供一系列三角函数方法。
+```
+<!--
+Math.sin()：返回参数的正弦
+Math.cos()：返回参数的余弦
+Math.tan()：返回参数的正切
+Math.asin()：返回参数的反正弦（弧度值）
+Math.acos()：返回参数的反余弦（弧度值）
+Math.atan()：返回参数的反正切（弧度值）
+-->
+```
