@@ -412,5 +412,121 @@ Referer: http://www.hackr.jp/index.htm
 ![User-Agent 用于传达浏览器的种类](https://i.loli.net/2018/01/19/5a60c69f33635.png)
 首部字段 User-Agent 会将创建请求的浏览器和用户代理名称等信息传达给服务器。
 [更多字段参考](http://www.ituring.com.cn/book/miniarticle/74656)
-## [响应首部字段](http://www.ituring.com.cn/book/miniarticle/74657)
+## 响应首部字段
+### Accept-Ranges
+```
+Accept-Ranges: bytes
+```
+该字段用来告知客户端服务器是否能处理范围请求，以指定获取服务器端某个部分资源。
+可指定的字段值有两个，可处理范围请求时指定其为`bytes`，反之则指定为`none`。
+### Age
+该字段能告知客户端，源服务器在多久之前创建了响应。（单位：秒）
+![Age 字段](https://i.loli.net/2018/01/20/5a62b894a05c9.png)
+```
+Age: 600
+```
+代理创建响应时必须加上首部字段 Age。
+### ETag
+当资源被缓存时，服务器会为客户端实体分配的唯一标识。
+当资源更新时，ETag值也会被重新分配。
+###  Location
+使用该字段可将响应接收方引导至与请求 URI  位置不同的资源。
+![Location 字段](https://i.loli.net/2018/01/20/5a62bc3903e27.png)
+### Proxy-Authenticate
+该字段将代理服务器要求的认证信息发送给客户端。
+### Retry-After
+```
+Retry-After: 120
+```
+该字段告知客户端应该在多久之后再次发送请求。
+### Server
+```
+Server: Apache/2.2.17 (Unix)
+```
+该字段告知客户端当前服务器安装的 HTTP 服务器应用程序的信息。
+### Vary
+```
+Vary: Accept-Language
+```
+从代理服务器接收到源服务器返回包含 Vary 指定项的响应之后，若要再进行缓存，仅对请求中含有 Vary 指定首部字段的请求返回缓存。
+### WWW-Authenticate
+该字段用于 HTTP 访问认证。
+## 实体首部字段
+### Allow
+```
+Allow: GET, HEAD
+```
+该字段用于通知客户端支持的 HTTP 方法。
+### Content-Encoding
+```
+Content-Encoding: gzip
+```
+告知客户端对实体主体部分选用的内容编码方式。
+内容编码：是指在不丢失实体信息的前提下所进行的压缩。
+### Content-Language
+告知客户端实体主题使用的自然语言。
+### Content-Length
+该字段表明实体主体部分大小（单位：字节）。
+### Content-Location
+该字段表示报文主体返回资源对应的 URI。
+### Content-MD5
+### Content-Range
+```
+Content-Range: bytes 5001-10000/10000
+```
+告知客户端作为响应返回的实体的哪个部分符合范围请求。（单位：字节）
+### Content-Type
+```
+Content-Type: text/html; charset=UTF-8
+```
+该字段说明了实体主体内对象的媒体类型。
+### Expires
+```
+Expires: Wed, 04 Jul 2012 08:26:05 GMT
+```
+该字段会将资源失效的日期告知客户端。
+### Last-Modified
+```
+Last-Modified: Wed, 23 May 2012 09:59:55 GMT
+```
+该字段指明资源最终修改的时间。
+## 为 Cookie 服务的首部字段
+Cookie 的工作机制是用户识别及状态管理。
+
+Web 网站为了管理用户的状态，通过浏览器将一些数据临时写入计算机。当用户访问该网站时，会取回之前存放的 Cookie。
+
+当再次调用 Cookie 时，由于可校验 Cookie 的有效期，以及发送方的域、路径、协议等信息，所以 Cookie 内的数据不会被攻击和泄漏。
+![为 Cookie 服务的首部字段](https://i.loli.net/2018/01/20/5a62ce0f5a18c.png)
+### Set-Cookie
+```
+Set-Cookie: status=enable; expires=Tue, 05 Jul 2011 07:26:31 GMT; path=/; domain=.hackr.jp;
+```
+当服务器对客户端进行管理时，会事先告知各种信息。也就是 Set-Cookie。
+- expires 属性
+该属性指定浏览器可发送 Cookie 的有效期。（若未明确指定，则默认为浏览器关闭前为止）
+- path 属性
+该属性限制指定 Cookie 的发送范围（文件目录）。
+- domain 属性
+该属性指定的域名都可发送 Cookie。比如
+ baidu.com，www.baidu.com 都可以发送 Cookie。(不指定 domain 属性更安全)
+- secure 属性
+该属性用于限制 Web 页面仅在 HTTPS 安全连接时才可以发送 Cookie。
+```
+Set-Cookie: name=value; secure
+```
+也就是说，即使域名相同也不会进行 Cookie
+ 回收。
+- HttpOnly 属性
+该属性使 JavaScript 脚本无法获得 Cookie。
+```
+Set-Cookie: name=value; HttpOnly
+```
+**目的：防止跨站脚本攻击对 Cookie 的信息窃取**
+
+### Cookie
+```
+Cookie: status=enable
+```
+Cookie 会告知服务器，当客户想获得 HTTP 状态管理支持时，就会在请求中包含从服务器收到的 Cookie。
+## [其他首部字段](http://www.ituring.com.cn/book/miniarticle/74660)
 
