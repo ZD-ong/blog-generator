@@ -1359,6 +1359,7 @@ var today = new Date();
 - `Date.now()`：返回当前距离1970年1月1日 00:00:00 UTC 的毫秒数
 - `Date.parse()`：解析日期字符串，返回距离1970年1月1日 00:00:00的毫秒数
 - `Date.UTC`：返回 UTC 时间（）世界标准时间。
+
 ### [Date 实例对象的方法](http://javascript.ruanyifeng.com/stdlib/date.html)
 ## RegExp对象
 正则表达式（regular expression），通常用来匹配文本。比如，Email地址。
