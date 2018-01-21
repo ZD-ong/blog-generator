@@ -1344,3 +1344,228 @@ Math.acos()：返回参数的反余弦（弧度值）
 Math.atan()：返回参数的反正切（弧度值）
 -->
 ```
+## Date 对象
+`Date`对象是 JavaScript 提供的日期和时间的操作接口。
+![作为普通函数直接调用](https://i.loli.net/2018/01/20/5a631288266b7.png)
+**无论有没有参数，直接调用`Date`总是返回当前时间**
+### new Date()
+`Date`还可以作为构造函数使用。
+```
+var today = new Date();
+```
+### 日期的运算
+类型转换时，`Date`对象的实例如果转为数值，则等于对应的毫秒数；如果转为字符串，则等于对应的日期字符串。（相减返回毫秒数，相加返回拼接字符串）
+### `Date`对象的静态方法
+- `Date.now()`：返回当前距离1970年1月1日 00:00:00 UTC 的毫秒数
+- `Date.parse()`：解析日期字符串，返回距离1970年1月1日 00:00:00的毫秒数
+- `Date.UTC`：返回 UTC 时间（）世界标准时间。
+### [Date 实例对象的方法](http://javascript.ruanyifeng.com/stdlib/date.html)
+## RegExp对象
+正则表达式（regular expression），通常用来匹配文本。比如，Email地址。
+新建正则表达式有两种方法：
+-  使用字面量，以斜杠开始和结束
+```
+var regex = /xyz/;
+```
+- RegExp 构造函数
+```
+var regex = new RegExp('xyz');
+```
+RegExp 构造函数接收第二个参数，修饰符`i`。
+```
+var regex = new RegExp('xyz', "i");
+// 等价于
+var regex = /xyz/i;
+```
+以上两种写法有一个细微区别。采用字面量写法，正则对象在代码载入时生成；采用构造函数写法，正则对象在代码运行时生成。（通常使用字面量写法）
+### 正则对象的属性和方法
+#### 属性
+- 修饰符
+```
+var r = /abc/igm;
+
+r.ignoreCase // true
+r.global // true
+r.multiline // true
+```
+- lastIndex：返回下一次开始搜索的位置。
+- source：返回正则表达式字符串形式
+```
+var r = /abc/igm;
+
+r.lastIndex // 0
+r.source // "abc"
+```
+#### test()
+返回一个布尔值，表示当前模式是否能匹配参数字符串。
+```
+/cat/.test('cats and dogs') // true
+```
+ 如果正则表达式带有`g`修饰符，则每一次`test`方法都从上一次结束的位置向后匹配。
+```
+var r = /x/g;
+var s = '_x_x';
+
+r.lastIndex // 0
+r.test(s) // true
+
+r.lastIndex // 2
+r.test(s) // true
+```
+上面代码每一次搜索的位置都是上一次匹配的后一个位置。
+
+带有`g`修饰符时，可以通过正则对象的`lastIndex`属性指定开始搜索的位置。
+```
+var r = /x/g;
+var s = '_x_x';
+
+r.lastIndex = 4;
+r.test(s) // false
+```
+上面代码指定从字符串的第五个位置开始搜索，这个位置没有字符，所以返回 `false`。
+
+**如果正则模式是一个空字符串，则匹配所有字符串。**
+```
+new RegExp('').test('abc')
+// true
+```
+#### exce()
+将匹配结果返回一个数组，否则返回`null`。
+```
+var s = '_x_x';
+var r1 = /x/;
+var r2 = /y/;
+
+r1.exec(s) // ["x"]
+r2.exec(s) // null
+```
+如果正则对象是一个空字符串，则`exec`方法会匹配成功，但返回的也是空字符串。
+```
+var r1 = new RegExp('');
+var a1 = r1.exec('abc');
+a1 // ['']
+a1.index // 0
+r1.lastIndex // 0
+```
+### 字符串对象的方法
+#### String.prototype.match()
+返回一个数组，成员是所有匹配的字符串。
+```
+var s = '_x_x';
+var r1 = /x/;
+var r2 = /y/;
+
+s.match(r1) // ["x"]
+s.match(r2) // null
+```
+该方法与`exce`方法非常类似。
+
+如果正则表达式带有`g`修饰符，则与`exce`不同，会一次性返回所有匹配成功的结果。
+```
+var s = 'abba';
+var r = /a/g;
+
+s.match(r) // ["a", "a"]
+r.exec(s) // ["a"]
+```
+#### String.prototype.search()
+返回第一个匹配结果在整个字符串中的位置。若无匹配，返回`-1`。
+```
+'_x_x'.search(/x/)
+// 1
+```
+#### String.prototype.replace()
+按照给定的正则表达式进行替换，返回替换后的字符串。
+```
+str.replace(search, replacement)
+```
+搜索模式如果不加`g` 修饰符，就替换第一个匹配成功的值，否则替换所有匹配成功的值。
+```
+'aaa'.replace('a', 'b') // "baa"
+'aaa'.replace(/a/g, 'b') // "bbb"
+```
+消除字符串首尾两端空格。
+```
+var str = '  #id div.class  ';
+
+str.replace(/^\s+|\s+$/g, '')
+// "#id div.class"
+```
+replace方法的第二个参数还可以是一个函数，将每一个匹配内容替换为函数返回值。
+```
+'3 and 5'.replace(/[0-9]+/g, function(match){
+  return 2 * match;
+})
+// "6 and 10"
+```
+#### String.prototype.split()
+按照正则规则分割字符串，返回数组。
+接受两个参数，分隔规则和返回数组的最大成员数。
+```
+// 非正则分隔
+'a,  b,c, d'.split(',')
+// [ 'a', '  b', 'c', ' d' ]
+
+// 正则分隔，去除多余的空格
+'a,  b,c, d'.split(/, */)
+// [ 'a', 'b', 'c', 'd' ]
+
+// 指定返回数组的最大成员
+'a,  b,c, d'.split(/, */, 2)
+[ 'a', 'b' ]
+```
+上面代码使用正则表达式，去除了子字符串的逗号后面的空格。
+### [匹配规则](http://javascript.ruanyifeng.com/stdlib/regexp.html)
+#### 修饰符
+表示模式的附加规则，放在正则模式的最尾部。
+修饰符可单个使用，也可多个一起使用。
+- `g`修饰符：表示全局匹配，匹配全部符合条件的结果。
+- `i`修饰符：正则对象默认区分大小写，加上`i`修饰符后表示忽略大小写。
+```
+/abc/.test('ABC') // false
+/abc/i.test('ABC') // true
+```
+- `m`修饰符：表示多行模式。默认情况`^`和`$`匹配字符串的开始和结尾处，加上`m`修饰符后，`^`和`$`还会匹配行首行尾（识别换行符）。
+ ```
+/world$/.test('hello world\n') // false
+/world$/m.test('hello world\n') // true
+```
+看另一个例子
+```
+/^b/m.test('a\nb') // true
+```
+上面代码要求匹配行首是`b`，加上`m`修饰符，可识别换行符，`b`在行首，返回`true`。
+#### 组匹配
+正则表达式的括号表示分组匹配，括号中的模式可以用来匹配分组的内容。
+```
+/fred+/.test('fredd') // true
+/(fred)+/.test('fredfred') // true
+```
+上面代码，第一个匹配重复字母`d`，第二个表示匹配"fred"这个词。
+
+匹配网页标签：
+```
+var tagName = /<([^>]+)>[^<]*<\/\1>/;
+
+tagName.exec("<b>bold</b>")[1]
+// 'b'
+```
+上面代码中，圆括号匹配尖括号之中的标签，而\1就表示对应的闭合标签。
+
+略加修改，就能捕获带有属性的标签
+```
+var html = '<b class="hello">Hello</b><i>world</i>';
+var tag = /<(\w+)([^>]*)>(.*?)<\/\1>/g;
+
+var match = tag.exec(html);
+
+match[1] // "b"
+match[2] // "class="hello""
+match[3] // "Hello"
+
+match = tag.exec(html);
+
+match[1] // "i"
+match[2] // ""
+match[3] // "world"
+```
