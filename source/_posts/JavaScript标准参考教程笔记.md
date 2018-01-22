@@ -1570,3 +1570,32 @@ match[1] // "i"
 match[2] // ""
 match[3] // "world"
 ```
+## JSON 对象
+JSON 格式：
+- 书写简单，一目了然
+- 符合 JavaScript 原生语法，由解释器引擎直接处理。
+### JSON.stringify()
+用于将一个值转为字符串。该字符串符合
+ JSON 格式，能够被`JSON.parse`方法还原。
+```
+JSON.stringify('abc') // ""abc""
+JSON.stringify(1) // "1"
+JSON.stringify(false) // "false"
+JSON.stringify([]) // "[]"
+JSON.stringify({}) // "{}"
+
+JSON.stringify([1, "false", false])
+// '[1,"false",false]'
+
+JSON.stringify({ name: "张三" })
+// '{"name":"张三"}'
+```
+**对于原始类型的字符串，转换结果会带双引号**
+```
+JSON.stringify('foo') === "foo" // false
+JSON.stringify('foo') === "\"foo\"" // true
+```
+上面代码中，字符串foo，被转成了""foo""。这是因为将来还原的时候，双引号可以让 JavaScript 引擎知道，foo是一个字符串，而不是一个变量名。
+
+
+
