@@ -1597,5 +1597,101 @@ JSON.stringify('foo') === "\"foo\"" // true
 ```
 上面代码中，字符串foo，被转成了""foo""。这是因为将来还原的时候，双引号可以让 JavaScript 引擎知道，foo是一个字符串，而不是一个变量名。
 
+如果原始对象中，有一个成员值是`undefined`、函数或 XML
+对象，这个成员会被过滤。
+```
+var obj = {
+  a: undefined,
+  b: function () {}
+};
+
+JSON.stringify(obj) // "{}"
+```
+
+如果数组成员是`undefined`、函数或 XML 对象，则这些值被转成`null`。
+```
+var arr = [undefined, function () {}];
+JSON.stringify(arr) // "[null,null]"
+```
+正则对象会被转成空对象。
+```
+JSON.stringify(/foo/) // "{}"
+```
+#### JSON.stringify() 的第二个参数
+可以是一个函数，更改`JSON.stringify`的默认行为
+```
+function f(key, value) {
+  if (typeof value === "number") {
+    value = 2 * value;
+  }
+  return value;
+}
+
+JSON.stringify({ a: 1, b: 2 }, f)
+// '{"a": 2,"b": 4}'
+```
+递归处理所有的键
+```
+var o = {a: {b: 1}};
+
+function f(key, value) {
+  console.log("["+ key +"]:" + value);
+  return value;
+}
+
+JSON.stringify(o, f)
+// []:[object Object]
+// [a]:[object Object]
+// [b]:1
+// '{"a":{"b":1}}'
+```
+上面代码中，对象o一共会被f函数处理三次。第一次键名为空，键值是整个对象o；第二次键名为a，键值是{b: 1}；第三次键名为b，键值为1。
+### toJSON 方法
+将正则对象自动转为字符串（JSON.stringify默认不能转换正则对象，但是设置了toJSON方法以后，就可以转换正则对象了）
+```
+var obj = {
+  reg: /foo/
+};
+
+// 不设置 toJSON 方法时
+JSON.stringify(obj) // "{"reg":{}}"
+
+// 设置 toJSON 方法时
+RegExp.prototype.toJSON = RegExp.prototype.toString;
+JSON.stringify(/foo/) // ""/foo/""
+```
+在正则对象的原型上部署`toJSON`方法，将其指向`toString`方法。因此当遇到转换成 JSON 时，就会先调用`toJSON`转为字符串，在被`JSON.stringify`处理。
+### JSON.parse()
+JSON.parse方法用于将JSON字符串转化成对象。
+```
+JSON.parse('{}') // {}
+JSON.parse('true') // true
+JSON.parse('"foo"') // "foo"
+JSON.parse('[1, 5, "false"]') // [1, 5, "false"]
+JSON.parse('null') // null
+
+var o = JSON.parse('{"name": "张三"}');
+o.name // 张三
+```
+结合`JSON.stringify()`和`JSON.parse()`方法可以实现对一个对象的深拷贝
+```
+var source = {
+    name:"source",
+    child:{
+        name:"child"
+    }
+}
+var target = JSON.parse(JSON.stringify(source));
+target.name = "target"; //改变target的name属性
+console.log(source.name);   //source
+console.log(target.name);   //target
+target.child.name = "target child"; //改变target的child
+console.log(source.child.name);  //child
+console.log(target.child.name);  //target child
+```
+赋值后的`target`和`source`二者不会互相影响。但是`JSON.stringify()`默认不能转换正则对象，需要再次结合`toJSON`方法。
+## [console 对象](http://javascript.ruanyifeng.com/stdlib/console.html)
+# 面向对象编程
+
 
 
