@@ -1692,6 +1692,222 @@ console.log(target.child.name);  //target child
 赋值后的`target`和`source`二者不会互相影响。但是`JSON.stringify()`默认不能转换正则对象，需要再次结合`toJSON`方法。
 ## [console 对象](http://javascript.ruanyifeng.com/stdlib/console.html)
 # 面向对象编程
+## 构造函数与 new 命令
+### 对象是什么
+面向对象编程将各种复杂的关系抽象为对象，再对其进行操作。
+
+所有事物都可以是对象，事物之间存在的种种联系建立了面向对象编程的基础。
+
+属性是对于对象的描述，方法是对象的行为。比如，可以将动物抽象成`animal`对象，使用“属性”描述是哪一种动物，使用“方法”表示动物的行为（奔跑）。
+### 构造函数
+面向对象编程的第一步就是要生成对象。
+
+我们可以通过一个模板来生成具有共同特征的的对象。
+
+JavaScript 语言是基于构造函数和原型链。这个构造函数就是上句话所说的模板，是专门用来生成对象的函数。
+
+这个构造函数，提供模板描述对象的基本结构，这样就能生成多个具有相同结构的对象，这些对象也成为实例。
+```
+var Vehicle = function () {
+  this.price = 1000;
+};
+```
+上面代码中，Vehicle就是构造函数，它提供模板，用来生成实例对象。为了与普通函数区别，构造函数名字的第一个字母通常大写。
+构造函数的特点：
+- 函数体内部使用`this`关键字，代表了所要生成的对象实例
+- 生成对象的时候，必须使用`new`命令，调用构造函数
+### new 命令
+`new`命令的作用就是执行构造函数，返回一个实例对象。
+```
+var Vehicle = function () {
+  this.price = 1000;
+};
+
+var v = new Vehicle();
+v.price // 1000
+```
+上面代码生成一个实例对象保存在变量`v`中。这个新生成的实例对象，继承了`price`属性。`new`命令执行时，构造函数内部额`this`，代表了新生成的实例对象，`this.price`表示实例对象有一个`price`属性，值是1000。
+构造函数也可以接受参数
+```
+var Vehicle = function (p) {
+  this.price = p;
+};
+
+var v = new Vehicle(500);
+```
+`new`命令本身就可以执行构造函数，所以后面的括号可省略
+```
+var v = new Vehicle();
+//等价于
+var v = new Vehicle;
+```
+如果忘记使用`new`命令，直接调用构造函数。构造函数会变成普通函数，并不会生成实例，而`this`此时代表全局对象。
+```
+var Vehicle = function (){
+  this.price = 1000;
+};
+
+var v = Vehicle();
+v.price
+// Uncaught TypeError: Cannot read property 'price' of undefined
+
+price
+// 1000
+```
+上面代码，`price`属性变成了全局变量，而变量`v`变成了`undefined`。
+因此为避免以上情况，可以在构造函数内部使用严格模式
+```
+function Fubar(foo, bar){
+  'use strict';
+  this._foo = foo;
+  this._bar = bar;
+}
+
+Fubar()
+// TypeError: Cannot set property '_foo' of undefined
+```
+由于在严格模式中，函数内部的`this`不能指向全局对象，默认等于`undefined`导致不加`new`会报错。
+#### new 命令的原理
+1. 创建一个空对象，作为将要返回的对象实例
+2. 将这个空对象的原型，指向构造函数的`prototype`属性
+3. 将这个空对象赋值给函数内部的`this`关键字
+4. 开始执行构造函数内部的代码
+也就是说，构造函数内部，`this`指的是一个新生成的空对象，所有针对`this`的操作都会发生在这个空对象上。
+
+构造函数的目的，就是为了操作`this`，将其变成期望的样子。
+
+如果构造函数内部有`return`语句，而且`return`后面跟着一个对象，`new`命令会返回`return`语句指定的对象；否则返回`this`对象
+```
+var Vehicle = function (){
+  this.price = 1000;
+  return { price: 2000 };
+};
+
+(new Vehicle()).price
+// 2000
+```
+如果普通函数（内部没有`this`关键字的函数）使用`new`命令，则会返回一个空对象。
+```
+function getMessage() {
+  return 'this is a message';
+}
+
+var msg = new getMessage();
+
+msg // {}
+typeof msg // "object"
+```
+判断函数调用时，是否使用`new`命令：
+使用`new.target`属性。
+```
+function f() {
+  console.log(new.target === f);
+}
+
+f() // false
+new f() // true
+使用new，返回true
+```
+举个栗子：
+```
+function f() {
+  if (!new.target) {
+    throw new Error('请使用 new 命令调用！');
+  }
+  // ...
+}
+
+f() // Uncaught Error: 请使用 new 命令调用！
+```
+#### 使用 Object.create() 创建实例对象
+以一个不是构造函数生成的实例对象为模板，生成一个新的实例对象。
+```
+var person1 = {
+  name: '张三',
+  age: 38,
+  greeting: function() {
+    console.log('Hi! I\'m ' + this.name + '.');
+  }
+};
+
+var person2 = Object.create(person1);
+
+person2.name // 张三
+person2.greeting() // Hi! I'm 张三.
+```
+上面代码中，对象`person1`是`person2`的模板，后者继承了前者的属性和方法。
+## this 关键字
+`this`总是返回一个对象，就是返回属性或方法“当前”所在的对象。
+```
+var person = {
+  name: '张三',
+  describe: function () {
+    return '姓名：'+ this.name;
+  }
+};
+
+person.describe()
+// "姓名：张三"
+```
+上面代码，`this`指向当前对象，也就是`person`。
+
+函数f内部使用了this关键字，随着f所在的对象不同，this的指向也不同。
+```
+function f() {
+  return '姓名：'+ this.name;
+}
+
+var A = {
+  name: '张三',
+  describe: f
+};
+
+var B = {
+  name: '李四',
+  describe: f
+};
+
+A.describe() // "姓名：张三"
+B.describe() // "姓名：李四"
+```
+如果一个函数在全局环境中运行，那么`this`就是指顶层对象（浏览器中为`window`对象）。
+```
+function f() {
+  return this;
+}
+
+f() === window // true
+```
+**`this`是所有函数运行时的一个隐藏参数，指向函数运行环境。**
+### 使用场合
+#### 全局环境
+在全局环境使用this，它指的就是顶层对象window。
+#### 构造函数
+构造函数中的this，指的是实例对象。
+#### 对象的方法
+将某个对象的方法赋值给另一个对象，会改变this的指向。
+```
+var obj ={
+  foo: function () {
+    console.log(this);
+  }
+};
+
+obj.foo() // obj
+```
+上面代码中，obj.foo方法执行时，它内部的this指向obj。
+但是，只有这一种用法（直接在obj对象上调用foo方法），this指向obj；其他用法时，this都指向代码块当前所在对象（浏览器为window对象）。
+```
+// 情况一
+(obj.foo = obj.foo)() // window
+
+// 情况二
+(false || obj.foo)() // window
+
+// 情况三
+(1, obj.foo)() // window
+```
+上面代码中，obj.foo先运算再执行，即使值根本没有变化，this也不再指向obj了。这是因为这时它就脱离了运行环境obj，而是在全局环境执行。
 
 
 
