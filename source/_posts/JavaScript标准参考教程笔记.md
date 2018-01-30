@@ -1910,5 +1910,311 @@ obj.foo() // obj
 ```
 上面代码中，obj.foo先运算再执行，即使值根本没有变化，this也不再指向obj了。这是因为这时它就脱离了运行环境obj，而是在全局环境执行。
 
+如果某个方法位于多层对象的内部，这时`this`只是指向当前一层的对象，而不会继承更上面的层。
+```
+var a = {
+  p: 'Hello',
+  b: {
+    m: function() {
+      console.log(this.p);
+    }
+  }
+};
 
+a.b.m() // undefined
+```
+上面代码中，`a.b.m`方法在`a`对象的第二层，该方法内部的`this`不是指向`a.b`。
+如果要达到预期效果，只有写成下面这样
+```
+var a = {
+  b: {
+    m: function() {
+      console.log(this.p);
+    },
+    p: 'Hello'
+  }
+};
+```
+### 使用注意点
+#### 避免多层this
+由于`this`的指向不确定，所以勿在函数中包含多层的`this`。
+```
+var o = {
+  f1: function () {
+    console.log(this);
+    var f2 = function () {
+      console.log(this);
+    }();
+  }
+}
+
+o.f1()
+// Object
+// Window
+```
+上面代码实际上是执行下面的代码
+```
+var temp = function () {
+  console.log(this);
+};
+
+var o = {
+  f1: function () {
+    console.log(this);
+    var f2 = temp();
+  }
+}
+```
+解决方法，在第二层改用一个指向外层`this`的变量。
+```
+var o = {
+  f1: function() {
+    console.log(this);
+    var that = this;
+    var f2 = function() {
+      console.log(that);
+    }();
+  }
+}
+
+o.f1()
+// Object
+// Object
+```
+这样就不会改变`this`的指向。
+**使用一个变量固定`this`的值，然后内层函数调用这个变量**
+#### 避免数组处理方法中的this
+数组的`map`和`foreach`方法，允许提供一个函数作为参数。这个函数内部不应该使用`this`。
+```
+var o = {
+  v: 'hello',
+  p: [ 'a1', 'a2' ],
+  f: function f() {
+    this.p.forEach(function (item) {
+      console.log(this.v + ' ' + item);
+    });
+  }
+}
+
+o.f()
+// undefined a1
+// undefined a2
+```
+上面代码中，`foreach`方法的回掉函数中的`this`，其实是指`window`对象，因此取不到`o.v`的值。因为内层的`this`不指向外部，而指向顶层对象。
+
+解决方法，使用中间变量。
+```
+var o = {
+  v: 'hello',
+  p: [ 'a1', 'a2' ],
+  f: function f() {
+    var that = this;
+    this.p.forEach(function (item) {
+      console.log(that.v+' '+item);
+    });
+  }
+}
+
+o.f()
+// hello a1
+// hello a2
+```
+另一种解决方法，将`this`当作`foreach`方法的第二个参数，固定它的运行环境。
+```
+var o = {
+  v: 'hello',
+  p: [ 'a1', 'a2' ],
+  f: function f() {
+    this.p.forEach(function (item) {
+      console.log(this.v + ' ' + item);
+    }, this);
+  }
+}
+
+o.f()
+// hello a1
+// hello a2
+```
+#### 避免回调函数中的`this`
+回调函数中的`this`往往会改变指向，最好避免使用。
+```
+var o = new Object();
+
+o.f = function () {
+  console.log(this === o);
+}
+
+o.f() // true
+```
+上面代码表示，如果调用`o`对象的 f 方法，其中`this`就是指向`o`对象。
+但是，如果将`f`方法指定给某个按钮的`click`事件，this的指向就变了。
+```
+$('#button').on('click', o.f);
+```
+点击按钮后，控制台会显示`false`，原因是此时`this`不再指向`o`对象，而是指向按钮的DOM对象，因为`f`方法是在按钮对象的环境中被调用。
+### 绑定 this 的方法
+#### function.prototype.call()
+可以指定函数内部`this`的指向（函数执行时所在作用域），然后在所指定的作用域中，调用该函数。
+```
+var obj = {};
+
+var f = function () {
+  return this;
+};
+
+f() === this // true
+f.call(obj) === obj // true
+```
+上面代码在全局环境下运行`f`时，`this`指向全局环境；`call`方法，将`this`指向对象`obj`，这样就能在对象`obj`的作用域中运行函数`f`。
+`call`方法的参数应该是一个对象。如果参数为空、`null`和`undefined`则默认传入全局对象。
+```
+var n = 123;
+var obj = { n: 456 };
+
+function a() {
+  console.log(this.n);
+}
+
+a.call() // 123
+a.call(null) // 123
+a.call(undefined) // 123
+a.call(window) // 123
+a.call(obj) // 456
+```
+上面代码，如果用`call`方法将`this`关键字指向`obj`对象，则在`obj`中调用`this`，返回456。
+
+`call`方法还可以接受多个参数。
+`func.call(thisValue, arg1, arg2, ...)`
+`call`的第一个参数就是`this`所要指向的那个对象，后面的参数则是函数调用是所需的参数。
+```
+function add(a, b) {
+  return a + b;
+}
+
+add.call(this, 1, 2) // 3
+```
+上面代码中，`call`方法指定函数`add`内部的`this`绑定当前环境。
+
+`call`方法的一个应用是调用对象的原生方法。
+```
+var obj = {};
+obj.hasOwnProperty('toString') // false
+
+// 覆盖掉继承的 hasOwnProperty 方法
+obj.hasOwnProperty = function () {
+  return true;
+};
+obj.hasOwnProperty('toString') // true
+
+Object.prototype.hasOwnProperty.call(obj, 'toString') // false
+```
+上面代码将`hasOwnProperty`方法的**原始定义**放到`obj`对象上执行，这样不论`obj`上面有没有同名方法，都不会影响结果。
+#### function.prototype.apply()
+`apply`方法与`call`方法类似，区别是接受一个数组作为函数执行时的参数。
+`func.apply(thisValue, [arg1, arg2, ...])`
+第一个参数也是`this`所指向的那个对象，如果设为 null 或 undefined ，则等于指定全局对象。第二个参数是一个数组。
+```
+function f(x,y){
+  console.log(x+y);
+}
+
+f.call(null,1,1) // 2
+f.apply(null,[1,1]) // 2
+```
+可以使用`apply`方法做一些扩展
+
+- 找出数组最大元素
+结合使用`apply`方法和`Math.max`方法，返回数组最大元素
+```
+var a = [10, 2, 4, 15, 9];
+
+Math.max.apply(null, a)
+// 15
+```
+- 将数组的空元素变为undefined
+通过`apply`方法，利用Array构造函数将数组的空元素变成undefined
+```
+Array.apply(null, ["a",,"b"])
+// [ 'a', undefined, 'b' ]
+```
+空元素与`undefined`的差别在于，数组的`forEach`方法会跳过空元素，但是不会跳过`undefined`。
+- 转换类数组对象
+另外，利用数组的`slice`方法，可以将类数组对象转为真正的数组。
+```
+Array.prototype.slice.apply({0:1,length:1})
+// [1]
+
+Array.prototype.slice.apply({0:1})
+// []
+
+Array.prototype.slice.apply({0:1,length:2})
+// [1, undefined]
+
+Array.prototype.slice.
+```
+上面代码的`apply`方法参数都是对象，但是返回结果都是数组，这就达到了对象转数组的目的。前提是，被处理对象必须有length属性，以及对应数字键。
+-  绑定回调函数的对象
+```
+var o = new Object();
+
+o.f = function () {
+  console.log(this === o);
+}
+
+var f = function (){
+  o.f.apply(o);
+  // 或者 o.f.call(o);
+};
+
+$('#button').on('click', f);
+```
+apply方法（或者call方法）不仅绑定函数执行时所在的对象，还会立即执行函数
+
+#### function.prototype.bind()
+`bind`方法用于将函数体内的`this`绑定到某个对象，然后返回一个新函数。
+`bind`方法用于将函数体内的`this`绑定到某个对象返回一个新函数。
+```
+var d = new Date();
+d.getTime() // 1481869925657
+
+var print = d.getTime;
+print() // Uncaught TypeError: this is not a Date object.
+```
+上面代码调用`print()`时报错，因为`getTime`方法内部的`this`绑定`Date`对象的实例，赋值给`print`以后，内部的`this`已经不指向`Date`对象实例了。
+```
+var print = d.getTime.bind(d);
+print() // 1481869925657
+```
+上面代码中，`bind`方法将`getTime`方法内部的`this`绑定到`d`对象，这样就可以安全的将这个方法赋值给其他变量了。
+
+`bind`方法除了绑定`this`之外，还可以绑定原函数的参数。
+如果`bind`方法的第一个参数是`null`或`undefined`，等于将`this`绑定到全局对象，函数运行时`this`指向顶层对象（在浏览器中为window）。
+```
+function add(x, y) {
+  return x + y;
+}
+
+var plus5 = add.bind(null, 5);
+plus5(10) // 15
+```
+上面代码中，函数`add`内部并没有`this`，使用`bind`方法的主要目的是绑定参数`x`，以后每次运行新函数`plus5`，就只需要提供另一个参数`y`就够了。
+
+`bind`方法有一些使用注意点
+- 每一次返回一个新函数
+bind方法每运行一次，就返回一个新函数，这会产生一些问题。比如，监听事件的时候，不能写成下面这样。
+```
+element.addEventListener('click', o.m.bind(o));
+element.removeEventListener('click', o.m.bind(o));
+```
+上面代码中，click事件绑定bind方法生成的一个匿名函数。这样会导致无法取消绑定，所以，下面的代码是无效的。
+
+正确的方法是写成下面这样：
+```
+var listener = o.m.bind(o);
+element.addEventListener('click', listener);
+//  ...
+element.removeEventListener('click', listener);
+```
+- [结合回调函数使用](http://javascript.ruanyifeng.com/oop/this.html)
+- [结合call方法使用](http://javascript.ruanyifeng.com/oop/this.html)
 
