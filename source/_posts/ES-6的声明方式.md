@@ -3,7 +3,7 @@ title: ES 6的声明方式
 date: 2018-02-28 20:01:00
 tags: ES 6
 ---
-[ES 6 新特性列表]([https://frankfang.github.io/es-6-tutorials/](https://frankfang.github.io/es-6-tutorials/))
+[ES 6 新特性列表](https://frankfang.github.io/es-6-tutorials/)
 
 # let 和 const
 
@@ -21,7 +21,7 @@ tags: ES 6
 
 现在再来说说var a = 1 这种声明方式，看代码：
 ![image](http://upload-images.jianshu.io/upload_images/6882087-df3c84b3c465db76..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
+<!-- more -->
 注意，a没有被声明，所以代码会报错，在此基础上稍加改动：
 
 ![image](http://upload-images.jianshu.io/upload_images/6882087-690f0ef25c8fbc0b..png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
