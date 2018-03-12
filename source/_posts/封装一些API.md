@@ -38,7 +38,7 @@ function addClass(node,classes){
     }
 }
 ```
-
+<!-- more -->
 如何使用封装的API?
 命名空间：
 ```
