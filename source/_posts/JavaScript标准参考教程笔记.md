@@ -2217,4 +2217,72 @@ element.removeEventListener('click', listener);
 ```
 - [结合回调函数使用](http://javascript.ruanyifeng.com/oop/this.html)
 - [结合call方法使用](http://javascript.ruanyifeng.com/oop/this.html)
+## prototype对象
+JavaScript语言的继承是通过“原型对象”（prototype）实现的。
+### 原型对象
+#### 构造函数
+JavaScript 通过构造函数生成新对象，因此构造函数可以视为对象的模板。可以在构造函数内部定义实例的属性和方法。
+```
+function Cat (name, color) {
+  this.name = name;
+  this.color = color;
+}
+
+var cat1 = new Cat('大毛', '白色');
+
+cat1.name // '大毛'
+cat1.color // '白色'
+```
+上面代码中，`Cat`就是一个构造函数，所有的实例对象（cat1）都会继承构造函数的属性和方法。
+
+但是，同一个构造函数的实例之间，无法共享属性，每新建一个实例，就生成了同样的属性和方法，浪费系统资源。
+
+我们需要一个方法，把这些完全相同的属性，共享起来。就是JavaScript的原型对象（prototype）。
+#### prototype 属性的作用
+JavaScript 继承机制的设计思想就是，原型对象的所有属性和方法，都能被实例对象共享。
+```
+function f() {}
+typeof f.prototype // "object"
+```
+上面代码中，函数`f`默认具有`prototype`属性，指向一个对象。
+```
+function Animal(name) {
+  this.name = name;
+}
+Animal.prototype.color = 'white';
+
+var cat1 = new Animal('大毛');
+var cat2 = new Animal('二毛');
+
+cat1.color // 'white'
+cat2.color // 'white'
+```
+上面代码，构造函数`Animal`的`prototype`属性，就是实例对象`cat1`和`cat2`的原型对象。原型对象上添加了`color`属性，所有实例对象都共享了该属性。
+
+就是因为原型对象的属性是共享的，所以只要更改原型对象，变动就会体现在所有实例对象上。
+
+因为实例对象本身没有`color`这个属性，它就会去原型对象上读取`color`属性。也就是说，当实例对象本身没有某个属性或方法的时候，它会到原型对象上找该属性或方法。
+
+但是，如果实例对昂本身就有某个属性或方法，它就不会再到原型上寻找了。
+```
+cat1.color = 'black';
+
+cat1.color // 'black'
+cat2.color // 'white'
+Animal.prototype.color // 'white';
+```
+所以说，原型对象的作用就是为实例对象提供一些共有的方法和属性。这些被定义子在原型上的方法可以被所有对象实例调用。
+#### 原型链
+JavaScript规定，所有对象都有自己的原型对象（prototype）。而原型对象也是对象，所以它也有自己的原型。因此，就会形成一“原型链”。
+
+一层一层向上追溯，会发现所有对象的原型最终会找到`Object.prototype`，也就是`Object`构造函数的`prototype`属性。所有对象都继承了`Object.prototype`的属性。这就是为什么所有对象都有`valueOf`和`toString`方法的原因，因为这都是从`Object.prototype`继承的。
+
+那么`Object.prototype`对象有没有原型呢？
+`Object.prototype`的原型是null。`null`没有任何属性和方法，也没有自己的原型。因此，原型链的尽头就是`null`。
+```
+Object.getPrototypeOf(Object.prototype)
+// null
+```
+读取对象的某个属性时，JavaScript 引擎先寻找对象本身的属性，如果找不到，就到它的原型去找，如果还是找不到，就到原型的原型去找。如果直到最顶层的Object.prototype还是找不到，则返回undefined。
+#### constructor 属性
 
