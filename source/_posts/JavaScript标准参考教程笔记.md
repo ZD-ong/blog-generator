@@ -2285,4 +2285,163 @@ Object.getPrototypeOf(Object.prototype)
 ```
 读取对象的某个属性时，JavaScript 引擎先寻找对象本身的属性，如果找不到，就到它的原型去找，如果还是找不到，就到原型的原型去找。如果直到最顶层的Object.prototype还是找不到，则返回undefined。
 #### constructor 属性
+`prototype`对象有一个`constructor`属性，默认指向`prototype`对象所在的构造函数。
+```
+function P() {}
+P.prototype.constructor === P // true
+```
+由于`constructor`属性定义在`prototype`对象上面，意味着可以被所有实例对象继承。
+```
+function P() {}
+var p = new P();
 
+p.constructor === P // true
+p.constructor === P.prototype.constructor // true
+p.hasOwnProperty('constructor') // false
+```
+上面代码，`p`是构造函数`P`的实例对象，但是`p`本身没有`constructor`属性，但是可以通过原型链调用`P.prototype.constructor`属性。
+
+`constructor`属性的作用是，可以得知某个实例对象到底是由哪一个构造函数产生的。
+通过这个特性我们可以从一个实例对象新建另一个实例：
+```
+function Constr() {}
+var x = new Constr();
+
+var y = new x.constructor();
+y instanceof Constr // true
+```
+上面代码，从`x.constructor`间接调用构造函数。
+
+constructor属性表示原型对象与构造函数之间的关联关系，如果修改了原型对象，一般会同时修改constructor属性，防止引用的时候出错。
+```
+function Person(name) {
+  this.name = name;
+}
+
+Person.prototype.constructor === Person // true
+
+Person.prototype = {
+  method: function () {}
+};
+
+Person.prototype.constructor === Person // false
+Person.prototype.constructor === Object // true
+```
+可以看到上面代码，直接修改了`Person`的原型对象，却没有连同`constructor`属性一起修改，导致这个属性不再指向`Person`，而是指向新原型。这个新原型只是一个普通对象，它的`constructor`指向Object构造函数，导致`Person.prototype.constructor`变成了Object。
+所以，修改原型对象时，一般要同时修改`constructor`属性指向。
+```
+// 坏的写法
+C.prototype = {
+  method1: function (...) { ... },
+  // ...
+};
+
+// 好的写法
+C.prototype = {
+  constructor: C,
+  method1: function (...) { ... },
+  // ...
+};
+
+// 更好的写法
+C.prototype.method1 = function (...) { ... };
+```
+上面代码中，要么将constructor属性重新指向原来的构造函数，要么只在原型对象上添加方法，这样可以保证instanceof运算符不会失真。
+### instanceof 运算符
+instanceof运算符返回一个布尔值，表示对象是否为某个构造函数的实例。
+```
+var v = new Vehicle();
+v instanceof Vehicle // true
+```
+instanceof运算符的左边是实例对象，右边是构造函数。它会检查右边构建函数的原型对象（prototype），是否在左边对象的原型链上。因此，下面两种写法是等价的。
+```
+v instanceof Vehicle
+// 等同于
+Vehicle.prototype.isPrototypeOf(v)
+```
+由于`instanceof`检查整个原型链，因此同一个实例对象，可能会对多个构造函数都返回`true`
+```
+var d = new Date();
+d instanceof Date // true
+d instanceof Object // true
+```
+上面代码中，d同时是Date和Object的实例，因此对这两个构造函数都返回true。
+
+`instanceof`运算符的一个用处，是判断值的类型。
+```
+var x = [1, 2, 3];
+var y = {};
+x instanceof Array // true
+y instanceof Object // true
+```
+**注意，instanceof运算符只能用于对象，不适用原始类型的值。**
+```
+var s = 'hello';
+s instanceof String // false
+```
+利用instanceof运算符，还可以巧妙地解决，调用构造函数时，忘了加new命令的问题。
+```
+function Fubar (foo, bar) {
+  if (this instanceof Fubar) {
+    this._foo = foo;
+    this._bar = bar;
+  } else {
+    return new Fubar(foo, bar);
+  }
+}
+```
+上面代码使用instanceof运算符，在函数体内部判断this关键字是否为构造函数Fubar的实例。如果不是，就表明忘了加new命令。
+## Object 对象的相关方法
+### Object.getPrototypeOf()
+Object.getPrototypeOf方法返回参数对象的原型。这是获取原型对象的标准方法。
+```
+var F = function () {};
+var f = new F();
+Object.getPrototypeOf(f) === F.prototype // true
+
+// 空对象的原型是 Object.prototype
+Object.getPrototypeOf({}) === Object.prototype // true
+
+// Object.prototype 的原型是 null
+Object.getPrototypeOf(Object.prototype) === null // true
+
+// 函数的原型是 Function.prototype
+function f() {}
+Object.getPrototypeOf(f) === Function.prototype // true
+```
+### Object.setPrototypeOf()
+Object.setPrototypeOf方法为参数对象设置原型，返回该参数对象。它接受两个参数，第一个是现有对象，第二个是原型对象。
+```
+var a = {};
+var b = {x: 1};
+Object.setPrototypeOf(a, b);
+
+Object.getPrototypeOf(a) === b
+a.x // 1
+```
+上面代码，将`a`的原型设置为`b`，这样`a`就可以调用`b`的属性和方法。
+### Object.create()
+除了使用new命令生成实例，还可以使用`Object.creat()`由一个实例对象生成另一个实例对象
+该方法接受一个对象作为参数，然后以它为原型，返回一个实例对象。（该实例完全继承原型对象的属性）
+```
+// 原型对象
+var A = {
+  print: function () {
+    console.log('hello');
+  }
+};
+
+// 实例对象
+var B = Object.create(A);
+
+Object.getPrototypeOf(B) === A // true
+B.print() // hello
+B.print === A.print // true
+```
+下面三种方式生成的新对象是等价的
+```
+var obj1 = Object.create({});
+var obj2 = Object.create(Object.prototype);
+var obj3 = new Object();
+```
+**使用Object.create方法的时候，必须提供对象原型，即参数不能为空，或者不是对象，否则会报错。**
