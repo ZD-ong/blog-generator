@@ -84,9 +84,17 @@ Node.prototype.addClass = function(){
 }
 ```
 
-仔细想想，上面Node原型的方法，有可能在不经意间被覆盖，所以安全起见我们可以再重写一个Node构造函数，比如Node2
-```
-window.Node2 = function(node){
+仔细想想：
+1. 上面Node原型的方法，有可能在不经意间被覆盖，所以安全起见我们可以再重写一个Node构造函数，比如Node2
+2. 如何使传入节点即使是选择器也能够匹配
+``` 
+window.Node2 = function(nodeOrSelector){
+    let node
+    if(typeof nodeOrSelector === 'string'){
+        node = document.querySelector(nodeOrSelector)
+    }else{
+        node = nodeOrSelector
+    }
     return {
         getSiblings: function(){
             var allChildren = node.parentNode.children
@@ -108,7 +116,8 @@ window.Node2 = function(node){
     }
 }
 ```
-就可以直接使用：
+最后就可以直接使用：
 var node2 = Node2(node) //node2存了新建构造函数的地址
 node2.getSiblings()
 node2.addClass('a','b','c')
+
