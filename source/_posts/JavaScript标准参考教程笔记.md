@@ -2445,3 +2445,136 @@ var obj2 = Object.create(Object.prototype);
 var obj3 = new Object();
 ```
 **使用Object.create方法的时候，必须提供对象原型，即参数不能为空，或者不是对象，否则会报错。**
+`Object.create`方法生成的新对象，动态继承了原型。在原型上做任何修改都会立刻反映到新对象上。
+`Object.create`方法还接收第二个参数，可以添加实例对象的属性。
+```
+var obj = Object.create({}, {
+  p1: {
+    value: 123,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  },
+  p2: {
+    value: 'abc',
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  }
+});
+
+// 等同于
+var obj = Object.create({});
+obj.p1 = 123;
+obj.p2 = 'abc';
+```
+
+`Object.create`方法生成的对象，继承了它原型对象的构造函数。
+```
+function A(){}
+var a = new A();
+var b = Object.create(a);
+
+b.constructor === A //true
+b instanceof A //true
+```
+上面代码，`b`对象的原型是`a`对象，因此继承了`a`对象的构造函数`A`。
+### Object.prototype.isPrototypeOf()
+`isPortotypeOf`方法，可以用来判断该对象是否为参数对象的原型。
+```
+var o1 = {};
+var o2 = Object.create(o1);
+var o3 = Object.create(o2);
+
+o2.isPrototypeOf(o3) // true
+o1.isPrototypeOf(o3) // true
+```
+上面代码中，`o1`和`o2`都是`o3`的原型。这表明只要原型对象处在参数对象的原型链上，`isPrototypeOf`方法都返回 `true`。
+**由于`Object.prototype`处于原型链的最顶端，所以对于各种实例对象（{},[],/xyz/）都返回`true`，只有直接继承自`null`的对象除外。**
+### Object.prototype.__proto__
+实例对象的__proto__，返回该对象的原型。
+```
+var obj = {};
+var p = {};
+
+obj.__proto__ = p;
+Object.getPrototypeOf(obj) === p // true
+```
+可以看到上面代码，通过`__proto__`属性，将`p`对象设为`obj`的原型。
+该属性可读写，但是根据语言标准，`__proto__`属性只有浏览器才需要部署。因此，应该尽量少用这个属性，而是用`Object.getPrototypeof()`和`Object.setPrototypeOf`，进行原型对象的读写操作。
+### 获取原型对象方法的比较
+**__proto__属性指向当前对象的原型对象，即构造函数的`prototype`**属性。
+```
+var obj = new Object();
+
+obj.__proto__ === Object.prototype
+// true
+obj.__proto__ === obj.constructor.prototype
+// true
+```
+因此，获取实例对象`obj`的原型对象，有三种方法。
+```
+obj.__proto__
+obj.constructor.prototype
+Object.getPrototypeOf(obj) 
+```
+上面三种方法建议使用第三种。
+### Object.getOwnPropertyNames()
+该方法返回一个数组，成员是参数对象本身的所有属性的键名，不包含继承的属性键名。
+```
+Object.getOwnPropertyNames(Date)
+// ["parse", "arguments", "UTC", "caller", "name", "prototype", "now", "length"]
+```
+上面代码，方法返回`Date`所有自身的属性名。
+可以搭配`Object.keys`方法获取可以遍历的属性。
+```
+Object.keys(Date) // []
+```
+上面代码表明，`Date`对象所有自身的属性，都是不可遍历的。
+### Object.prototype.hasOwnProperty()
+对象实例的`hasOwnProperty`方法返回一个布尔值，用于判断某个属性定义在对象自身，还是定义在原型链上。
+```
+Date.hasOwnProperty('length') // true
+Date.hasOwnProperty('toString') // false
+```
+ 上面代码表明，`length`是`Date`自身的属性，`toString`是继承的属性。
+
+**`hasOwnProperty`**方法是JavaScript之中唯一一个处理对象属性时，不会遍历原型链的方法。
+### in 运算符和 for...in 循环
+in 运算符返回一个布尔值，表示一个对象是否具有某个属性。它不区分该属性是对象自身的属性还是继承的属性。
+```
+'length' in Date // true
+'toString' in Date // true
+```
+通常用`in`运算符检查一个属性是否存在。
+
+获得对象的所有可便利属性（不管是自身的还是继承的），可以使用`for...in`循环。
+```
+var o1 = { p1: 123 };
+
+var o2 = Object.create(o1, {
+  p2: { value: "abc", enumerable: true }
+});
+
+for (p in o2) {
+  console.info(p);
+}
+// p2
+// p1
+```
+上面对象中，对象`o2`的`p2`属性是自身的，`p1`属性是继承的。这两个属性都会被`for...in`循环遍历。
+可以搭配`hasOwnProperty`方法获得对象自身的属性。
+```
+for ( var name in object ) {
+  if ( object.hasOwnProperty(name) ) {
+    /* loop code */
+  }
+}
+```
+### 对象的拷贝
+拷贝一个对象需要：
+1. 确保拷贝后的对象，与原对象具有同样的原型
+2. 确保拷贝后的对象，与原对象具有同样的实例属性
+
+## 面向对象编程的模式
+### 构造函数的继承

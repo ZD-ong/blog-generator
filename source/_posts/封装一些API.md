@@ -57,7 +57,8 @@ Node.prototype.addClass = function(){
 ```
 就可以直接使用：
 node.getSiblings()
-node.addClass()
+node.addClass('a','b','c')
+
 **但是方法并不能获取节点，再做一点改进,将所有node改成this，建立连接。(省略node参数)**
 1. node.getSiblings()
 ```
@@ -82,3 +83,32 @@ Node.prototype.addClass = function(){
     classes.forEach((value)=> this.classList.add(value))
 }
 ```
+
+仔细想想，上面Node原型的方法，有可能在不经意间被覆盖，所以安全起见我们可以再重写一个Node构造函数，比如Node2
+```
+window.Node2 = function(node){
+    return {
+        getSiblings: function(){
+            var allChildren = node.parentNode.children
+
+            var array = {
+                length: 0
+            }
+            for(let i = 0; i < allChildren.length; i++){
+                if(allChildren[i] !== node){
+                    array[array.length] = allChildren[i]
+                    array.length += 1
+                }
+            }
+            return array
+        },
+        addClass: function(classes){
+            classes.forEach((value)=> node.classList.add(value))
+        }
+    }
+}
+```
+就可以直接使用：
+var node2 = Node2(node) //node2存了新建构造函数的地址
+node2.getSiblings()
+node2.addClass('a','b','c')
