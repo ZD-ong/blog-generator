@@ -95,10 +95,11 @@ window.Node2 = function(node){
 }
 ```
 最后就可以直接使用：
+```
 var node2 = Node2(node) //node2存了新建构造函数的地址
 node2.getSiblings()
 node2.addClass('a','b','c')
-
+```
 等等，这个Node2真的和jQuery很像，既然这样，干脆就改成jQuery吧
 ```
 function jQuery(node){
