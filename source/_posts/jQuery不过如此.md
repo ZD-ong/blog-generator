@@ -248,7 +248,7 @@ var node2 = jQuery('ul > li')
 //{0: li, 1: li, length: 2, addClass: f, text:f}
 ```
 
-那么既然这个构造函数的名字能够被自定义，干脆一不做二不休直接改成`$`吧！
+那么既然这个变量`node2`的名字自定义，干脆一不做二不休直接改成`$`吧！
 ```
 window.$ = jQuery
 ```
