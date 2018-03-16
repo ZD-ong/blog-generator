@@ -130,6 +130,7 @@ node2.addClass()
 ```
 就搞定了。。。
 但是jQuery更强大，它不仅仅可以传递node,还可以直接传递选择器去找到对应的元素，再试着往下写：
+```
 window.jQuery = function(nodeOrSelector){
     let node
     if(typeof nodeOrSelector === 'string'){
@@ -157,7 +158,9 @@ window.jQuery = function(nodeOrSelector){
         }
     }
 }
+```
 不仅仅是这样，看看这个封装的jQuery能不能操作多个节点：
+```
 window.jQuery = function(nodeOrSelector){
     let nodes = {}
     if(typeof nodeOrSelector === 'String'){
@@ -188,7 +191,7 @@ window.jQuery = function(nodeOrSelector){
 }
 var node2 = jQuery('ul>li')
 node2.addClass()
-
+```
 再试着添加几个常用API：
 获取元素的内容：
 ```
