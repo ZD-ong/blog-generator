@@ -47,9 +47,9 @@ touch db
 ```
 ...
   if(path === '/pay'){ //如果用户点击付款会向这个路径发送请求
-    let amount = fs.readFileSync('./db', 'utf8')
+    let amount = fs.readFileSync('/db', 'utf8')
     amount -= 1
-    fs.writeFileSync('./db', amount)
+    fs.writeFileSync('/db', amount)
     response.setHeader('Content-Type', 'application/javascript')
     response.write('amount.innerText = ' + amount)
     response.end()
@@ -99,9 +99,9 @@ button.addEventListener('click', (e)=>{
 ```
 ...
 if (path === '/pay'){
-    let amount = fs.readFileSync('./db', 'utf8')
+    let amount = fs.readFileSync('/db', 'utf8')
     amount -= 1
-    fs.writeFileSync('./db', amount)
+    fs.writeFileSync('/db', amount)
     let callbackName = query.callback
     response.setHeader('Content-Type', 'application/javascript')
     response.write(`
