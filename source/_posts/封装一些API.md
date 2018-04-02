@@ -123,7 +123,7 @@ node2.addClass('a','b','c')
 
 用jQuery封装AJAX
 
-API: jQuery.ajax(url, method, body, success, fail)
+API: jQuery.ajax({url, method, body, success, fail})
 ```
 window.jQuery.ajax = function(url, method, body, success, fail){
     let xhr = new XMLHttpRequest()
@@ -141,4 +141,8 @@ window.jQuery.ajax = function(url, method, body, success, fail){
 }
 function success(responseText){}
 function fail(responseText){}
+```
+升级 jQuery.ajax 满足 Promise 规则
+```
+window.jQuery.ajax = function(url, method, body, headers)
 ```
