@@ -121,3 +121,24 @@ var node2 = Node2(node) //node2存了新建构造函数的地址
 node2.getSiblings()
 node2.addClass('a','b','c')
 
+用jQuery封装AJAX
+
+API: jQuery.ajax(url, method, body, success, fail)
+```
+window.jQuery.ajax = function(url, method, body, success, fail){
+    let xhr = new XMLHttpRequest()
+    xhr.open(method, url)
+    xhr.onreadystatechange = ()=>{
+        if(xhr.readyState === 4){
+            if(xhr.status >= 200 && xhr.status <= 300){
+                success.call(undefined, xhr.responseText)
+            }else if(xhr.status >= 400){
+                fail.call(undefined, xhr)
+            }
+        }
+    }
+    xhr.send(body)
+}
+function success(responseText){}
+function fail(responseText){}
+```
