@@ -125,12 +125,12 @@ node2.addClass('a','b','c')
 
 API: jQuery.ajax({url, method, body, success, fail})
 ```
-window.jQuery.ajax = function(url, method, body, success, fail){
+window.jQuery.ajax = function({url, method, body, success, fail}){
     let xhr = new XMLHttpRequest()
     xhr.open(method, url)
     xhr.onreadystatechange = ()=>{
         if(xhr.readyState === 4){
-            if(xhr.status >= 200 && xhr.status <= 300){
+            if(xhr.status >= 200 && xhr.status < 300){
                 success.call(undefined, xhr.responseText)
             }else if(xhr.status >= 400){
                 fail.call(undefined, xhr)
@@ -139,10 +139,24 @@ window.jQuery.ajax = function(url, method, body, success, fail){
     }
     xhr.send(body)
 }
-function success(responseText){}
-function fail(responseText){}
 ```
 升级 jQuery.ajax 满足 Promise 规则
 ```
-window.jQuery.ajax = function(url, method, body, headers)
+window.jQuery.ajax = function({url, method, body}){
+    return new Promise(function(resolve, reject){
+        let xhr = new XMLHttpRequest()
+        xhr.open(method, url)
+        
+        xhr.onreadystatechange = ()=>{
+            if(xhr.readyState === 4){
+                if(xhr.status >= 200 && xhr.status <300){
+                    resolve.call(undefined, xhr.responseText)
+                }else if(xhr.status >= 400){
+                    reject.call(undefined, request)
+                }
+            }
+        }
+        xhr.send(body)
+    })
+}
 ```
