@@ -8,6 +8,7 @@ MDN 对 BFC 的描述：
 
 ![image](http://upload-images.jianshu.io/upload_images/6882087-2eb1e3ef67f168cd.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 往下接着看看：
+<!-- more -->
 > 下列方式会创建块格式化上下文：
 > - 根元素或包含根元素的元素
 > - 浮动元素（元素的 float 不是 none）
