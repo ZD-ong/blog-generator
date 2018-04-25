@@ -23,7 +23,9 @@ button.addEventListener('click', (e)=>{
     }
 })
 ```
-2. 通过`<script>`标签造`get`请求
+
+2. 通过 `<script>`标签造`get`请求
+
 ```
 button.addEventListener('click', (e)=>{
     let script = document.createElement('script')
@@ -111,15 +113,18 @@ if (path === '/pay'){
 }
 ...
 ```
+
 程序员们约定这样写：
 ```
 callbackName -> callback
 ```
+
 （文中为了方便理解用了`callbackName`代替）
 
 这样的话就真正达到双方的通讯目的了，后端根据前端提供的`callback`参数构造一个函数调用，把数据返回给第一个参数，`.call`就拿到数据了。
 看来给`<script>`标签的`src`属性加`callback`参数就是JSONP啦。
 如果使用jQuery，JSONP的请求方式就更简单啦：
+
 ```
 $.ajax({
  url: "http://bbb.com:8002/pay",
@@ -135,6 +140,6 @@ $.ajax({
 ```
 吐槽一下：和ajax又有个鬼的关系。。。
 
-**另外，JSONP是通过动态创建`<script>`标签实现的，动态创建的<script>标签只能用get，不能用post。**
+另外，JSONP是通过动态创建`<script>`标签实现的，动态创建的`<script>` 标签只能用get，不能用post。
 
-所以说，通过动态创建<script>标签，并利用其src属性提供一个callback参数构造回调函数来接收数据，从而达到与第三方网址建立通信的目的，这就是JSONP啦。
+所以说，通过动态创建`<script>`标签，并利用其src属性提供一个callback参数构造回调函数来接收数据，从而达到与第三方网址建立通信的目的，这就是JSONP啦。
